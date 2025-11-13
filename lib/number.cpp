@@ -6,7 +6,7 @@ constexpr int NBITS = 35 * 8;
 std::string _toBinaryShift(uint32_t number) {
     std::string result = "000";
     for (int i = 31; i >= 0; --i) {
-        result += (number & (1 << i)) ? '1' : '0';
+        result += (number & (1u << i)) ? '1' : '0';
     }
     return result;
 }
@@ -25,7 +25,7 @@ bool _setBit(uint239_t& x, int index) {
 }
 
 bool _shiftLeftWithBit(uint239_t& x, uint8_t in_bit) {
-    uint8_t carry = in_bit & 1;
+    uint8_t carry = in_bit & 1u;
     for (int i = 34; i >= 0; --i) {
         uint16_t v = static_cast<uint16_t>(x.data[i]) << 1;
         v |= carry;
@@ -37,7 +37,9 @@ bool _shiftLeftWithBit(uint239_t& x, uint8_t in_bit) {
 
 bool _checkIfZero(const uint239_t& x) {
     for (int i = 0; i < 35; ++i) {
-        if (x.data[i] != 0) return false;
+        if (x.data[i] != 0) {
+            return false;
+        }
     }
     return true;
 }
