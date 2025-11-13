@@ -1,4 +1,4 @@
 add_library(
-        NumberLibrary
+        number
         number.cpp
 )
