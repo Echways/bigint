@@ -59,72 +59,50 @@ uint239_t FromString(const char* str, uint32_t shift) {
 }
 
 bool operator==(const uint239_t& lhs, const uint239_t& rhs) {
-    for (size_t i = 0; i < 35; ++i) {
-        if (lhs.data[i] != rhs.data[i]) {return false;}
+    uint239_t nlhs = lhs >> GetShift(lhs);
+    uint239_t nrhs = rhs >> GetShift(rhs);
+
+    for (std::size_t i = 0; i < 35; ++i) {
+        if ( (nlhs.data[i] & 0x7F) != (nrhs.data[i] & 0x7F) ) {
+            return false;
+        }
     }
     return true;
 }
 
 bool operator!=(const uint239_t& lhs, const uint239_t& rhs) {
-    for (size_t i = 0; i < 35; ++i) {
-        if (lhs.data[i] != rhs.data[i]) {return true;}
-    }
-    return false;
+    return !(lhs == rhs);
 }
 
 uint239_t operator<<(const uint239_t& lhs, uint32_t shift) {
-    uint239_t result{};
-    uint239_t temp{};
+    uint239_t result = lhs;
 
-    if (shift == 0) {
-        return lhs;
-    }
+    uint32_t currentShift = GetShift(lhs);
+    uint32_t newShift = currentShift + shift;
 
-    int byteShift = static_cast<int>(shift / 8 % 35);
-    int bitShift = static_cast<int>(shift % 8);
-
-    uint8_t carry = 0;
-    std::string shiftString = _toBinaryShift(shift);
-    for (int i = 34; i >= 0; i--) {
-        temp.data[i] = ((lhs.data[i] & 0x7F) << bitShift) | carry;
-        carry = (lhs.data[i] & 0x7F) >> (7 - bitShift);
-
+    std::string shiftString = _toBinaryShift(newShift);
+    for (std::size_t i = 3; i < 35; ++i) {
+        result.data[i] &= 0x7F;
         if (shiftString[i] == '1') {
-            temp.data[i] |= 0x80;
-        }else {
-            temp.data[i] &= 0x7F;
+            result.data[i] |= 0x80;
         }
-
-    }
-
-    for (int i = 34; i - byteShift >= 0; i--) {
-        result.data[i - byteShift] = temp.data[i];
     }
 
     return result;
 }
 
 uint239_t operator>>(const uint239_t& lhs, uint32_t shift) {
-    uint239_t result{};
-    uint239_t temp{};
+    uint239_t result = lhs;
 
-    if (shift == 0) {
-        return lhs;
-    }
+    uint32_t currentShift = GetShift(lhs);
+    uint32_t newShift = (currentShift > shift) ? (currentShift - shift) : 0u;
 
-    int byteShift = static_cast<int>(shift / 8 % 35);
-    int bitShift = static_cast<int>(shift % 8);
-
-    uint8_t carry = 0;
-    for (int i = 0; i < 35; i++) {
-        temp.data[i] = ((lhs.data[i] & 0x7F) >> bitShift) | carry;
-        carry = (lhs.data[i] & 0x7F) << (7 - bitShift);
-        temp.data[i] &= 0x7F;
-
-    }
-
-    for (int i = 0; i + byteShift < 35; i++) {
-        result.data[i + byteShift] = temp.data[i];
+    std::string shiftString = _toBinaryShift(newShift);
+    for (std::size_t i = 3; i < 35; ++i) {
+        result.data[i] &= 0x7F;
+        if (shiftString[i] == '1') {
+            result.data[i] |= 0x80;
+        }
     }
 
     return result;
